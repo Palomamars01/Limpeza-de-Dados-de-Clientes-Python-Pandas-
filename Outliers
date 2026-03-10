@@ -1,0 +1,49 @@
+import pandas as pd 
+from scipy import stats
+
+pd.set_option('display.width', None)
+
+df = pd.read_csv('clientes_limpos.csv')
+
+df_filtro_basico = df[df['idade'] > 100]
+print('Filtro básico: \n', df_filtro_basico[['nome', 'idade']])
+
+#Identificar outliers com Z-score
+z_scores = stats.zscore(df['idade'].dropna())  #calcular o Z-score para a coluna 'idade', ignorando valores nulos
+outliers_zscore = df[z_scores >= 3]  #filtrar o DataFrame para obter os registros onde o Z-score é maior que 3
+print('Outliers pelo Z-score: \n', outliers_zscore)
+
+#Filtrrar outliers com Z-score
+df_zscore = df[(stats.zscore(df['idade']) < 3)]  #filtrar o DataFrame para obter os registros onde o Z-score é menor que 3
+
+#Identificar outliers com IQR
+Q1 = df['idade'].quantile(0.25)  #calcular o primeiro quartil (Q1) da coluna 'idade'
+Q3 = df['idade'].quantile(0.75)  #calcular o terceiro quartil (Q3) da coluna 'idade'
+IQR = Q3 - Q1  #calcular o intervalo interquartil (IQR)
+
+limite_baixo = Q1 - 1.5 * IQR  #calcular o limite inferior para identificar outliers
+limite_alto = Q3 + 1.5 * IQR  #calcular o limite superior para identificar outliers
+
+print('Limite IQR:', limite_baixo, limite_alto)
+
+outliers_iqr = df[(df['idade'] < limite_baixo) | (df['idade'] > limite_alto)]  #filtrar o DataFrame para obter os registros onde a idade é menor que o limite inferior ou maior que o limite superior
+print('Outliers pelo IQR: \n', outliers_iqr)
+
+#Filtrar outliers com IQR
+limite_baixo = 1
+limite_alto = 100
+
+f_iqr = df[(df['idade'] >= limite_baixo) & (df['idade'] <= limite_alto)]
+
+#filtrar o DataFrame para obter os registros onde a idade está entre o limite inferior e o limite superior
+df = df[(df['idade'] >= limite_baixo) & (df['idade'] <= limite_alto)]  #filtrar o DataFrame para obter os registros onde a idade está entre 1 e 100
+
+#Filtrar endereços válidos
+df['endereco'] = df['endereco'].apply(lambda x: 'endereço inválido' if not isinstance(x, str) or len(x.split('\n')) < 3 else x)
+
+#Tratar campos de texto
+df['nome'] = df ['nome'].apply(lambda x: 'Nome Inválido' if isinstance(x, str) and len(x) > 50 else x)  #substituir valores na coluna 'nome' por 'Nome Inválido' se o valor for uma string e tiver mais de 50 caracteres
+print('Qtd registros com nomes grandes: ', (df['nome'] == 'Nome Inválido').sum())  #contar a quantidade de registros onde a coluna 'nome' é igual a 'Nome Inválido'
+
+print('Dados com outliers tratados: \n', df)
+df.to_csv('clientes_tratados.csv', index=False) 
