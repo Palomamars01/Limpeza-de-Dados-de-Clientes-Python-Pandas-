@@ -26,7 +26,7 @@ Este projeto aplica técnicas de **Data Cleaning** em uma base real de clientes,
 ├── 📄 Limpeza de dados.py         → Limpeza e padronização geral
 ├── 📄 Outliers.py                 → Tratamento de outliers
 ├── 📄 Inconsistencias.py          → Correção de inconsistências
-├── 📄 clientes_limpos.csv         → Base de dados tratada (output)
+├── 📄 clientes_corrigidos.csv         → Base de dados tratada (output)
 └── 📄 README.md
 ```
 
